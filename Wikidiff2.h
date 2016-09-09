@@ -15,6 +15,7 @@
 #include <vector>
 #include <set>
 
+
 class Wikidiff2 {
 	public:
 		typedef std::basic_string<char, std::char_traits<char>, WD2_ALLOCATOR<char> > String;
@@ -34,11 +35,24 @@ class Wikidiff2 {
 		enum { MAX_WORD_LEVEL_DIFF_COMPLEXITY = 40000000 };
 		String result;
 
+        struct DiffMapEntry
+        {
+            WordDiff diff;
+            int opCharCount[4]= { 0 };
+            double similarity;
+            int opIndexFrom, opLineFrom, opIndexTo, opLineTo;
+
+            DiffMapEntry(WordVector& words1, WordVector& words2, int opIndexFrom_, int opLineFrom_, int opIndexTo_, int opLineTo_);
+        };
+        // PhpAllocator can't be specialized for std::pair, so we're using the standard allocator.
+        typedef std::map<uint64_t, std::shared_ptr<struct Wikidiff2::DiffMapEntry> > DiffMap;
+        DiffMap diffMap;
+
 		virtual void diffLines(const StringVector & lines1, const StringVector & lines2,
 				int numContextLines);
 		virtual void printAdd(const String & line) = 0;
 		virtual void printDelete(const String & line) = 0;
-		virtual void printWordDiff(const String & text1, const String & text2) = 0;
+		virtual void printWordDiff(const String & text1, const String & text2, bool printLeft= true, bool printRight= true) = 0;
 		virtual void printBlockHeader(int leftLine, int rightLine) = 0;
 		virtual void printContext(const String & input) = 0;
 
@@ -52,6 +66,8 @@ class Wikidiff2 {
 
 		void explodeWords(const String & text, WordVector &tokens);
 		void explodeLines(const String & text, StringVector &lines);
+        
+        bool printMovedLineDiff(StringDiff & linediff, int opIndex, int opLine);
 };
 
 inline bool Wikidiff2::isLetter(int ch)
@@ -82,5 +98,42 @@ inline const Wikidiff2::String & Wikidiff2::getResult() const
 {
 	return result;
 }
+
+inline Wikidiff2::DiffMapEntry::DiffMapEntry(Wikidiff2::WordVector& words1, Wikidiff2::WordVector& words2, int opIndexFrom_, int opLineFrom_, int opIndexTo_, int opLineTo_):
+    diff(words1, words2, MAX_WORD_LEVEL_DIFF_COMPLEXITY),
+    opIndexFrom(opIndexFrom_), opLineFrom(opLineFrom_), opIndexTo(opIndexTo_), opLineTo(opLineTo_)
+{
+    int charsTotal= 0;
+    for(int i= 0; i<diff.size(); ++i)
+    {
+        int op= diff[i].op;
+        int charCount;
+        switch(diff[i].op)
+        {
+            case DiffOp<Word>::del:
+            case DiffOp<Word>::copy:
+                charCount= diff[i].from.size();
+                break;
+            case DiffOp<Word>::add:
+                charCount= diff[i].to.size();
+                break;
+            case DiffOp<Word>::change:
+                charCount= std::max( diff[i].from.size(), diff[i].to.size() );
+                break;
+        }
+        opCharCount[op]+= charCount;
+        charsTotal+= charCount;
+    }
+    if(opCharCount[DiffOp<Word>::copy]==0)
+        similarity= 0.;
+    else
+    {
+        if(charsTotal)
+            similarity= double(opCharCount[DiffOp<Word>::copy]) / charsTotal;
+        else
+            similarity= 0.0;
+    }
+}
+
 
 #endif

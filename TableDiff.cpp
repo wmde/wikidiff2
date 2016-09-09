@@ -23,7 +23,7 @@ void TableDiff::printDelete(const String & line)
 		"</tr>\n";
 }
 
-void TableDiff::printWordDiff(const String & text1, const String & text2)
+void TableDiff::printWordDiff(const String & text1, const String & text2, bool printLeft, bool printRight)
 {
 	WordVector words1, words2;
 
@@ -33,17 +33,30 @@ void TableDiff::printWordDiff(const String & text1, const String & text2)
 
 	//debugPrintWordDiff(worddiff);
 
-	// print twice; first for left side, then for right side
-	result += "<tr>\n"
-		"  <td class=\"diff-marker\">−</td>\n"
-		"  <td class=\"diff-deletedline\"><div>";
-	printWordDiffSide(worddiff, false);
-	result += "</div></td>\n"
-		"  <td class=\"diff-marker\">+</td>\n"
-		"  <td class=\"diff-addedline\"><div>";
-	printWordDiffSide(worddiff, true);
-	result += "</div></td>\n"
-		"</tr>\n";
+	result += "<tr>\n";
+    
+    // print left side or blank placeholder.
+    if(printLeft)
+    {
+        result += "  <td class=\"diff-marker\">−</td>\n"
+            "  <td class=\"diff-deletedline\"><div>";
+        printWordDiffSide(worddiff, false);
+        result += "</div></td>\n";
+    }
+    else
+        result += "  <td class=\"diff-empty\" colspan=2></td>";
+
+    // print right side or blank placeholder.
+    if(printRight)
+    {
+        result += "  <td class=\"diff-marker\">+</td>\n"
+            "  <td class=\"diff-addedline\"><div>";
+        printWordDiffSide(worddiff, true);
+        result += "</div></td>\n"
+            "</tr>\n";
+    }
+    else
+        result += "  <td class=\"diff-empty\" colspan=2></td>";
 }
 
 void TableDiff::printWordDiffSide(WordDiff &worddiff, bool added)
@@ -67,7 +80,7 @@ void TableDiff::printWordDiffSide(WordDiff &worddiff, bool added)
 			}
 		} else if (!added && (op.op == DiffOp<Word>::del || op.op == DiffOp<Word>::change)) {
 			n = op.from.size();
-			result += "<del class=\"diffchange diffchange-inline\">";
+            result += "<del class=\"diffchange diffchange-inline\">";
 			for (j=0; j<n; j++) {
 				op.from[j]->get_whole(word);
 				printText(word);
