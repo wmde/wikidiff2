@@ -10,7 +10,7 @@ void InlineDiff::printDelete(const String& line)
 	printWrappedLine("<div class=\"mw-diff-inline-deleted\"><del>", line, "</del></div>\n");
 }
 
-void InlineDiff::printWordDiff(const String& text1, const String& text2, bool printLeft, bool printRight)
+void InlineDiff::printWordDiff(const String& text1, const String& text2, const String & diffID, bool printLeft, bool printRight)
 {
 	WordVector words1, words2;
 
@@ -19,7 +19,7 @@ void InlineDiff::printWordDiff(const String& text1, const String& text2, bool pr
 	WordDiff worddiff(words1, words2, MAX_WORD_LEVEL_DIFF_COMPLEXITY);
 	String word;
 
-    // XXXX todo: omit left side & do strike-through according to isMovedBlock
+    // XXXX todo: omit left side & do strike-through according to printLeft/printRight
     
 	result += "<div class=\"mw-diff-inline-changed\">";
 	for (unsigned i = 0; i < worddiff.size(); ++i) {

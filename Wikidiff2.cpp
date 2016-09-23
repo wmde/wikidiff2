@@ -75,7 +75,7 @@ void Wikidiff2::diffLines(const StringVector & lines1, const StringVector & line
 				n2 = linediff[i].to.size();
 				n = std::min(n1, n2);
 				for (j=0; j<n; j++) {
-					printWordDiff(*linediff[i].from[j], *linediff[i].to[j]);
+					printWordDiff(*linediff[i].from[j], *linediff[i].to[j], makeDiffID(i,j, i,j));
 				}
 				from_index += n;
 				to_index += n;
@@ -98,9 +98,9 @@ void Wikidiff2::diffLines(const StringVector & lines1, const StringVector & line
 
 bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLine)
 {
-//    look for corresponding moved line for the opposite case in moved-line-map
-//    if moved line exists:
-//        print diff to the moved line, omitting the left/right side for added/deleted line
+    //    look for corresponding moved line for the opposite case in moved-line-map
+    //    if moved line exists:
+    //        print diff to the moved line, omitting the left/right side for added/deleted line
     uint64_t key= uint64_t(opIndex) << 32 | opLine;
     auto it= diffMap.find(key);
     if(it!=diffMap.end())
@@ -110,12 +110,13 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
         bool printLeft= linediff[opIndex].op==DiffOp<String>::del? true: false;
         bool printRight= !printLeft;
         // XXXX todo: we already have the diff, don't have to do it again, just have to print it
-        printWordDiff(*linediff[best->opIndexFrom].from[best->opLineFrom], *linediff[best->opIndexTo].to[best->opLineTo], printLeft, printRight);
+        printWordDiff(*linediff[best->opIndexFrom].from[best->opLineFrom], *linediff[best->opIndexTo].to[best->opLineTo], 
+            makeDiffID(best->opIndexFrom, best->opLineFrom, best->opIndexTo, best->opLineTo), printLeft, printRight);
 
         char ch[128];
         snprintf(ch, sizeof(ch), "found in diffmap. copy: %d, del: %d, add: %d, change: %d, similarity: %.4f\n", 
             best->opCharCount[DiffOp<Word>::copy], best->opCharCount[DiffOp<Word>::del], best->opCharCount[DiffOp<Word>::add], best->opCharCount[DiffOp<Word>::change], best->similarity);
-        result+= "<tr><td /><td /><td /><td class=\"diff-context\">";
+        result+= "<tr><td /><td class=\"diff-context\" colspan=3>";
         result+= ch;
         snprintf(ch, sizeof(ch), "from: (%d,%d) to: (%d,%d)\n", 
             best->opIndexFrom, best->opLineFrom, best->opIndexTo, best->opLineTo);
@@ -125,8 +126,8 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
         return true;
     }
     
-//    else:
-//        try to find a corresponding moved line in deleted/added lines
+    //    else:
+    //        try to find a corresponding moved line in deleted/added lines
     int otherOp= (linediff[opIndex].op==DiffOp<String>::add? DiffOp<String>::del: DiffOp<String>::add);
     std::shared_ptr<DiffMapEntry> found= nullptr;
 	for(int i = 0; i < linediff.size(); ++i)
@@ -154,9 +155,9 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
         }
     }
     
-//        if candidate exists:
-//            add candidate to moved-line-map twice, for add/del case
-//            print diff to the moved line, omitting the left/right side for added/deleted line
+    //        if candidate exists:
+    //            add candidate to moved-line-map twice, for add/del case
+    //            print diff to the moved line, omitting the left/right side for added/deleted line
     if(found && found->similarity > 0.25)
     {
         diffMap[key]= found;
@@ -166,13 +167,13 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
         bool printLeft= linediff[opIndex].op==DiffOp<String>::del? true: false;
         bool printRight= !printLeft;
         // XXXX todo: we already have the diff, don't have to do it again, just have to print it
-        printWordDiff(*linediff[found->opIndexFrom].from[found->opLineFrom], 
-            *linediff[found->opIndexTo].to[found->opLineTo], printLeft, printRight);
+        printWordDiff(*linediff[found->opIndexFrom].from[found->opLineFrom], *linediff[found->opIndexTo].to[found->opLineTo], 
+            makeDiffID(found->opIndexFrom, found->opLineFrom, found->opIndexTo, found->opLineTo), printLeft, printRight);
 
         char ch[64];
         snprintf(ch, sizeof(ch), "copy: %d, del: %d, add: %d, change: %d, similarity: %.4f\n", 
             found->opCharCount[DiffOp<Word>::copy], found->opCharCount[DiffOp<Word>::del], found->opCharCount[DiffOp<Word>::add], found->opCharCount[DiffOp<Word>::change], found->similarity);
-        result+= "<tr><td /><td /><td /><td class=\"diff-context\">";
+        result+= "<tr><td /><td class=\"diff-context\" colspan=3>";
         result+= ch;
         snprintf(ch, sizeof(ch), "from: (%d,%d) to: (%d,%d)\n", 
             found->opIndexFrom, found->opLineFrom, found->opIndexTo, found->opLineTo);
