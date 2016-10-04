@@ -75,7 +75,7 @@ void Wikidiff2::diffLines(const StringVector & lines1, const StringVector & line
 				n2 = linediff[i].to.size();
 				n = std::min(n1, n2);
 				for (j=0; j<n; j++) {
-					printWordDiff(*linediff[i].from[j], *linediff[i].to[j], makeDiffID(i,j, i,j));
+					printWordDiff(*linediff[i].from[j], *linediff[i].to[j]);
 				}
 				from_index += n;
 				to_index += n;
@@ -111,8 +111,9 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
         bool printRight= !printLeft;
         // XXXX todo: we already have the diff, don't have to do it again, just have to print it
         printWordDiff(*linediff[best->opIndexFrom].from[best->opLineFrom], *linediff[best->opIndexTo].to[best->opLineTo], 
-            makeDiffID(best->opIndexFrom, best->opLineFrom, best->opIndexTo, best->opLineTo), printLeft, printRight);
+            printLeft, printRight);
 
+#ifdef DEBUG_MOVED_LINES
         char ch[128];
         snprintf(ch, sizeof(ch), "found in diffmap. copy: %d, del: %d, add: %d, change: %d, similarity: %.4f\n", 
             best->opCharCount[DiffOp<Word>::copy], best->opCharCount[DiffOp<Word>::del], best->opCharCount[DiffOp<Word>::add], best->opCharCount[DiffOp<Word>::change], best->similarity);
@@ -122,6 +123,7 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
             best->opIndexFrom, best->opLineFrom, best->opIndexTo, best->opLineTo);
         result+= ch;
         result+= "</td></tr>";
+#endif // DEBUG_MOVED_LINES
         
         return true;
     }
@@ -168,8 +170,9 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
         bool printRight= !printLeft;
         // XXXX todo: we already have the diff, don't have to do it again, just have to print it
         printWordDiff(*linediff[found->opIndexFrom].from[found->opLineFrom], *linediff[found->opIndexTo].to[found->opLineTo], 
-            makeDiffID(found->opIndexFrom, found->opLineFrom, found->opIndexTo, found->opLineTo), printLeft, printRight);
+            printLeft, printRight);
 
+#ifdef DEBUG_MOVED_LINES
         char ch[64];
         snprintf(ch, sizeof(ch), "copy: %d, del: %d, add: %d, change: %d, similarity: %.4f\n", 
             found->opCharCount[DiffOp<Word>::copy], found->opCharCount[DiffOp<Word>::del], found->opCharCount[DiffOp<Word>::add], found->opCharCount[DiffOp<Word>::change], found->similarity);
@@ -179,6 +182,7 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
             found->opIndexFrom, found->opLineFrom, found->opIndexTo, found->opLineTo);
         result+= ch;
         result+= "</td></tr>";
+#endif // DEBUG_MOVED_LINES
 
         return true;
     }

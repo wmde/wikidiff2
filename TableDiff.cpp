@@ -23,7 +23,7 @@ void TableDiff::printDelete(const String & line)
 		"</tr>\n";
 }
 
-void TableDiff::printWordDiff(const String & text1, const String & text2, const String & diffID, bool printLeft, bool printRight)
+void TableDiff::printWordDiff(const String & text1, const String & text2, bool printLeft, bool printRight)
 {
 	WordVector words1, words2;
 
@@ -39,7 +39,7 @@ void TableDiff::printWordDiff(const String & text1, const String & text2, const 
     if(printLeft)
     {
         result += "  <td class=\"diff-marker\">−</td>\n"
-            "  <td class=\"diff-deletedline\" id=\"" + diffID + "\"><div>";
+            "  <td class=\"diff-deletedline\"><div>";
         printWordDiffSide(worddiff, false);
         result += "</div></td>\n";
     }
@@ -50,7 +50,7 @@ void TableDiff::printWordDiff(const String & text1, const String & text2, const 
     if(printRight)
     {
         result += "  <td class=\"diff-marker\">+</td>\n"
-            "  <td class=\"diff-addedline\" id=\"" + diffID + "\"><div>";
+            "  <td class=\"diff-addedline\"><div>";
         printWordDiffSide(worddiff, true);
         result += "</div></td>\n"
             "</tr>\n";

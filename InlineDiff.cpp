@@ -10,7 +10,7 @@ void InlineDiff::printDelete(const String& line)
 	printWrappedLine("<div class=\"mw-diff-inline-deleted\"><del>", line, "</del></div>\n");
 }
 
-void InlineDiff::printWordDiff(const String& text1, const String& text2, const String & diffID, bool printLeft, bool printRight)
+void InlineDiff::printWordDiff(const String& text1, const String& text2, bool printLeft, bool printRight)
 {
 	WordVector words1, words2;
 

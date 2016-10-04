@@ -52,7 +52,7 @@ class Wikidiff2 {
 				int numContextLines);
 		virtual void printAdd(const String & line) = 0;
 		virtual void printDelete(const String & line) = 0;
-		virtual void printWordDiff(const String & text1, const String & text2, const String & diffID, bool printLeft= true, bool printRight= true) = 0;
+		virtual void printWordDiff(const String & text1, const String & text2, bool printLeft= true, bool printRight= true) = 0;
 		virtual void printBlockHeader(int leftLine, int rightLine) = 0;
 		virtual void printContext(const String & input) = 0;
 
@@ -68,13 +68,6 @@ class Wikidiff2 {
 		void explodeLines(const String & text, StringVector &lines);
         
         bool printMovedLineDiff(StringDiff & linediff, int opIndex, int opLine);
-        
-        String makeDiffID(int opIndexFrom, int opLineFrom, int opIndexTo, int opLineTo)
-        {
-            char ch[128];
-            snprintf(ch, sizeof(ch), "diff_%d.%d-%d.%d", opIndexFrom, opLineFrom, opIndexTo, opLineTo);
-            return String(ch);
-        }
 };
 
 inline bool Wikidiff2::isLetter(int ch)
