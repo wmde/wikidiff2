@@ -44,7 +44,7 @@ void TableDiff::printWordDiff(const String & text1, const String & text2, bool p
         result += "</div></td>\n";
     }
     else
-        result += "  <td class=\"diff-empty\" colspan=2>&#160;</td>\n";
+        result += "  <td colspan=\"2\" class=\"diff-empty\">&#160;</td>\n";
 
     // print right side or blank placeholder.
     if(printRight)
@@ -56,7 +56,8 @@ void TableDiff::printWordDiff(const String & text1, const String & text2, bool p
             "</tr>\n";
     }
     else
-        result += "  <td class=\"diff-empty\" colspan=2>&#160;</td>";
+        result += "  <td colspan=\"2\" class=\"diff-empty\">&#160;</td>\n"
+            "</tr>\n";
 }
 
 void TableDiff::printWordDiffSide(WordDiff &worddiff, bool added)
