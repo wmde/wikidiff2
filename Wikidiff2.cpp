@@ -95,14 +95,19 @@ void Wikidiff2::diffLines(const StringVector & lines1, const StringVector & line
 	}
 }
 
-#define DEBUG_MOVED_LINES
+//#define DEBUG_MOVED_LINES
 
 bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLine)
 {
+    // helper fn creates 64-bit lookup key from opIndex and opLine
+    auto makeKey= [](int index, int line)
+    {
+        return uint64_t(index) << 32 | line;    };
+    
     //    look for corresponding moved line for the opposite case in moved-line-map
     //    if moved line exists:
     //        print diff to the moved line, omitting the left/right side for added/deleted line
-    uint64_t key= uint64_t(opIndex) << 32 | opLine;
+    uint64_t key= makeKey(opIndex, opLine);
     auto it= diffMap.find(key);
     if(it!=diffMap.end())
     {
@@ -165,13 +170,13 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
     {
         // if we displayed a diff to the found block before, don't mark this one as moved.
         uint64_t otherKey= linediff[opIndex].op==DiffOp<String>::add? 
-            uint64_t(found->opIndexFrom)<<32 | found->opLineFrom: 
-            uint64_t(found->opIndexTo)<<32 | found->opLineTo;
+            makeKey(found->opIndexFrom, found->opLineFrom):
+            makeKey(found->opIndexTo, found->opLineTo);
         if(diffMap.find(otherKey) != diffMap.end())
             return false;
         
         diffMap[key]= found;
-        uint64_t oppositeKey= uint64_t(found->opIndexTo) << 32 | found->opLineTo;
+        uint64_t oppositeKey= makeKey(found->opIndexTo, found->opLineTo);
         diffMap[oppositeKey]= found;
 
         bool printLeft= linediff[opIndex].op==DiffOp<String>::del? true: false;
