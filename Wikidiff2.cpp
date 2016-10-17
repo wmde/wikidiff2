@@ -95,6 +95,7 @@ void Wikidiff2::diffLines(const StringVector & lines1, const StringVector & line
 	}
 }
 
+#define DEBUG_MOVED_LINES
 
 bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLine)
 {
@@ -162,6 +163,13 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
     //            print diff to the moved line, omitting the left/right side for added/deleted line
     if(found && found->similarity > 0.25)
     {
+        // if we displayed a diff to the found block before, don't mark this one as moved.
+        uint64_t otherKey= linediff[opIndex].op==DiffOp<String>::add? 
+            uint64_t(found->opIndexFrom)<<32 | found->opLineFrom: 
+            uint64_t(found->opIndexTo)<<32 | found->opLineTo;
+        if(diffMap.find(otherKey) != diffMap.end())
+            return false;
+        
         diffMap[key]= found;
         uint64_t oppositeKey= uint64_t(found->opIndexTo) << 32 | found->opLineTo;
         diffMap[oppositeKey]= found;
