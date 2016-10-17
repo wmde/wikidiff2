@@ -102,7 +102,8 @@ bool Wikidiff2::printMovedLineDiff(StringDiff & linediff, int opIndex, int opLin
     // helper fn creates 64-bit lookup key from opIndex and opLine
     auto makeKey= [](int index, int line)
     {
-        return uint64_t(index) << 32 | line;    };
+        return uint64_t(index) << 32 | line;
+    };
     
     //    look for corresponding moved line for the opposite case in moved-line-map
     //    if moved line exists:
